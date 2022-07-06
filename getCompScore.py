@@ -1,8 +1,9 @@
+
 import getline
 import getlinevalue
 import math
 import cv2
-import gbvs
+from matplotlib import pyplot as plt
 
 def score(im):
     threshold = 0.35
@@ -32,10 +33,15 @@ def score(im):
     m_wtROTPt = 0.4
     m_wtROTLn = 0.6
 
-    height,width,c=im.shape
+    x=im.shape
+    print(x)
+    height=x[0]
+    width=x[1]
+    c=x[2]
 
-    if c==1:
-        im=cat(3,im,im,im)
+    # if c==1:
+    #     im=cat(3,im,im,im)
+    
     
     area_image = height * width
     balanceCenter_x = 0.5 * width
@@ -47,9 +53,85 @@ def score(im):
 
     #find salient objects
 
-    map=gbvs(im)
-    print(map)
+    saliency=cv2.saliency.StaticSaliencySpectralResidual_create()
+    status,saliency_map=saliency.computeSaliency(im)
+    saliencyMap = (saliency_map * 255).astype("uint8")
+    print(saliencyMap.shape)
+    # cv2.imshow("Saliency map",saliency_map)
+    # cv2.waitKey(3000)
+    # cv2.destroyWindow()
+
+    ret,thresh=cv2.threshold(saliencyMap,40,255,0)
+
+    contours,hierarchy=cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+
+    multi_ob=0
+
+    temp_area_object=[]
+
+    centroid_object_x=[]
+    centroid_object_y=[]
+    area_object=[]
+    bounding_box=[]
+    mean_salval=[]
+
+    cx=[]
+    cy=[]
+    area_ob=[]
+    bounding=[]
+    for i in range (len(contours)):
+        area_ob.append(cv2.contourArea(contours[i]))     #area
+        m=cv2.moments(contours[i])                       #moments
+        cx.append(int(m['m10']/m['m00']))                #centroid x
+        cy.append(int(m['m01']/m['m00']))                #centroid y
+        bounding.append(cv2.boundingRect(contours[i]))   #bounding box
+
+    if len(contours)>1:
+
+        for i in range (len(contours)):
+        # finding area of contour[i]
+            area=cv2.contourArea(contours[i])
+            temp_area_object.append([area,i])
+
+        temp_area_object.sort(reverse=True)
+
+        # print(temp_area_object)
+
+        ratio_objects=temp_area_object[1]/temp_area_object[0]
+
+        if ratio_objects<0.15:
+            area_object.append(temp_area_object[0][0])
+            centroid_object_x.append(cx[temp_area_object[0][1]])
+            centroid_object_y.append(cy[temp_area_object[0][1]])
+            bounding_box.append(bounding[temp_area_object[0][1]])
+
+        else:
+            multi_ob=1
+            for i in range (len(contours)):
+                area_object.append(area_ob[i])
+                centroid_object_x.append(cx[i])
+                centroid_object_y.append(cy[i])
+                bounding_box.append(bounding[i])
+
+    else:
+        area_object=area_ob
+        bounding_box=bounding
+        centroid_object_x=cx
+        centroid_object_y=cy
+
+
+    #Salient Region Size
+
+    ratio_object_image=area_object[0]/area_image
     
+    if (ratio_object_image <= areaBound_small):
+        m_EnSize = math.sqrt((ratio_object_image-0.1)**2)
+    elif (ratio_object_image <= areaBound_large) and (ratio_object_image > areaBound_small):
+        m_EnSize = math.sqrt((ratio_object_image-0.56)**2)
+    elif (ratio_object_image > areaBound_large):
+        m_EnSize = math.sqrt((ratio_object_image-0.82)**2)
+    
+    m_EnSize=math.exp(-m_EnSize*m_EnSize/2/sigma_size**2)
 
     # Visual Balance
 
@@ -59,13 +141,32 @@ def score(im):
     weight = 0
     weightSum = 0
 
+    if multi_ob==1:
+        for i in range (len(contours)):
+            weight = area_object(i) * mean_salval[i]
+            x = x + weight * (centroid_object_x[i])
+            y = y + weight * (centroid_object_y[i])
+            weightSum = weightSum + weight
+    else:
+        weight = area_object[0] * mean_salval[0]
+        x = x + weight * (centroid_object_x[0])
+        y = y + weight * (centroid_object_y[0])
+        weightSum = weightSum + weight
+    
+    x = x / weightSum - balanceCenter_x
+    y = y / weightSum - balanceCenter_y
+    x = x / width
+    y = y / height
+    d = abs(x) + abs(y)
+    d = math.exp(-d*d/2/sigma_vb**2)
+    m_EnVB = d
     
     # Rule of Thirds
     # Line based ROT 
     if line_info==0 or line_info==1:
-        m_EnRotLn=line_value
+        m_EnROTLn=line_value
     else:
-        m_EnRotLn=0
+        m_EnROTLn=0
 
     # Point based ROT
 
@@ -81,19 +182,19 @@ def score(im):
     pty1 = 1/3 * height
     pty2 = 2/3 * height
 
-    if multi_obj==1:
-        for i in range (np.shape(s)[0]):
-            weight = area_object(i) * mean_salval(i)
-            dx = min(abs(centroid_object_x(i) - ptx1), abs(centroid_object_x(i) - ptx2))
-            dy = min(abs(centroid_object_y(i) - pty1), abs(centroid_object_y(i) - pty2))
+    if multi_ob==1:
+        for i in range (len(contours)):
+            weight = area_object[i] * mean_salval[i]
+            dx = min(abs(centroid_object_x[i] - ptx1), abs(centroid_object_x[i] - ptx2))
+            dy = min(abs(centroid_object_y[i] - pty1), abs(centroid_object_y[i] - pty2))
             weightSum = weightSum + weight
             dist = dx / width + dy / height
             dist = math.exp(-dist*dist/2/sigma_point**2)
             m_EnROTPt = m_EnROTPt + weight*dist
     else:
-        weight = area_object * mean_salval
-        dx = min(abs(centroid_object_x - ptx1), abs(centroid_object_x - ptx2))
-        dy = min(abs(centroid_object_y - pty1), abs(centroid_object_y - pty2))
+        weight = area_object[0] * mean_salval[0]
+        dx = min(abs(centroid_object_x[0] - ptx1), abs(centroid_object_x[0] - ptx2))
+        dy = min(abs(centroid_object_y[0] - pty1), abs(centroid_object_y[0] - pty2))
         weightSum = weightSum + weight
         dist = dx / width + dy / height
         dist = math.exp(-dist*dist/2/sigma_point**2)
@@ -137,3 +238,5 @@ def score(im):
     return [ROT_score,VB_score,Diag_score,Size_score,Total_score,Result]
 
 
+# im=cv2.imread('newpic.png')
+# score(im)
