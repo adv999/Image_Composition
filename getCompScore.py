@@ -56,14 +56,24 @@ def score(im):
     saliency=cv2.saliency.StaticSaliencySpectralResidual_create()
     status,saliency_map=saliency.computeSaliency(im)
     saliencyMap = (saliency_map * 255).astype("uint8")
-    print(saliencyMap.shape)
+    # print(saliencyMap.shape)
     # cv2.imshow("Saliency map",saliency_map)
-    # cv2.waitKey(3000)
-    # cv2.destroyWindow()
+    
+    
+    ret,thresh=cv2.threshold(saliencyMap,89,255,0)
+    # cv2.imshow("Saliency map",thresh)
+    
 
-    ret,thresh=cv2.threshold(saliencyMap,40,255,0)
-
+    # contours,hierarchy=cv2.findContours(saliency_map,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
     contours,hierarchy=cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+    
+    # finding pixel values
+    pixel_value=[]
+    for cnt in contours:
+        s=0
+        for i in range (len(cnt)):
+            s+=saliencyMap[cnt[i][0][1]][cnt[i][0][0]]
+        pixel_value.append(s)
 
     multi_ob=0
 
@@ -89,7 +99,7 @@ def score(im):
     if len(contours)>1:
 
         for i in range (len(contours)):
-        # finding area of contour[i]
+            # finding area of contour[i]
             area=cv2.contourArea(contours[i])
             temp_area_object.append([area,i])
 
@@ -103,6 +113,7 @@ def score(im):
             area_object.append(temp_area_object[0][0])
             centroid_object_x.append(cx[temp_area_object[0][1]])
             centroid_object_y.append(cy[temp_area_object[0][1]])
+            mean_salval.append(pixel_value[temp_area_object[0][1]]/temp_area_object[0][0])
             bounding_box.append(bounding[temp_area_object[0][1]])
 
         else:
@@ -111,6 +122,7 @@ def score(im):
                 area_object.append(area_ob[i])
                 centroid_object_x.append(cx[i])
                 centroid_object_y.append(cy[i])
+                mean_salval.append(pixel_value[i]/area_ob[i])
                 bounding_box.append(bounding[i])
 
     else:
@@ -118,6 +130,7 @@ def score(im):
         bounding_box=bounding
         centroid_object_x=cx
         centroid_object_y=cy
+        mean_salval.append(pixel_value[0]/area_ob[0])
 
 
     #Salient Region Size
