@@ -2,7 +2,7 @@ Composition Score Calculator
 
 Introduction:
 
-This is a Python Project made to calculate Ccomposition Score of a image. We have take the following characteristics of the image to find the composition score:
+This is a Python Project made to calculate Composition Score of a image. We have take the following characteristics of the image to find the composition score:
 1) Rule of Third
 2) Diagonal Dominance
 3) Visual Balance
