@@ -1,37 +1,29 @@
 import cv2
 from PIL import Image, ImageFilter
+from cv2 import projectPoints
 import numpy as np
 import math
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 
 def get_end_points(im):
-
+   
     # cv2.imshow("Original Image",im)
-    # cv2.waitKey(2000)
-    # cv2.destroyAllWindows()
-    
 
-    im=cv2.GaussianBlur(im,(5,5),cv2.BORDER_DEFAULT)    #Apply gaussian filter
+    # im=cv2.GaussianBlur(im,(5,5),cv2.BORDER_DEFAULT)    #Apply gaussian filter
 
     # cv2.imshow("Gaussian filter image",im)
-    # cv2.waitKey(2000)
-    # cv2.destroyAllWindows()
 
     gray=cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)    #Finding gray image
-    print(gray.shape)
+    
     # cv2.imshow("Gray Scale Image",gray)
-    # cv2.waitKey(2000)
-    # cv2.destroyAllWindows()
 
     edges=cv2.Canny(gray,50,150,apertureSize=3)    #applying edge detection method
-    # cv2.imshow("Gray Scale Image",edges)
-    # cv2.waitKey(2000)
-    # cv2.destroyAllWindows()
+    # cv2.imshow("Gray Scale Image",edges)  
 
-    lines=cv2.HoughLines(edges,1,np.pi/180,threshold=200)
+    lines=cv2.HoughLines(edges,1,np.pi/180,100)
 
-    # lines=cv2.HoughLinesP(edges,1,np.pi/180,threshold=100)
+    lines1=cv2.HoughLinesP(edges,1,np.pi/180,threshold=100,minLineLength=5,maxLineGap=10)
 
     # print(lines)
     # print(type(lines))
@@ -64,19 +56,28 @@ def get_end_points(im):
 
         points.append([x1,y1,x2,y2])
 
-
         len=math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1))
 
         
-        cv2.line(im,(x1,y1),(x2,y2),(255,0,255),2)
+        # cv2.line(im,(x1,y1),(x2,y2),(0,0,255),1)
         if mxlen<len:
             mxlen=len
-            xylong=points  
+            xylong=points 
 
-    # print(points) 
+    # print(points)
+    # houghlinep meethod
+    # for points in lines1:
+    #   # Extracted points nested in the list
+    #     x1,y1,x2,y2=points[0]
+    #     # Draw the lines joing the points
+    #     # On the original image
+    #     cv2.line(im,(x1,y1),(x2,y2),(0,255,0),2) 
 
-    cv2.imshow("Detected lines",im)
-    cv2.waitKey(10000)
+    # # print(points) 
+    # # im=cv2.resize(im,(im.shape[1],im.shape[0]))
+    # cv2.imshow("Detected lines",im)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
     length_lines=np.shape(lines)[0]
 
