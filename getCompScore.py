@@ -34,7 +34,7 @@ def score(im):
     m_wtROTLn = 0.6
 
     x=im.shape
-    print(x)
+    # print(x)
     height=x[0]
     width=x[1]
     c=x[2]
@@ -89,17 +89,27 @@ def score(im):
     cy=[]
     area_ob=[]
     bounding=[]
+    index=[]
     for i in range (len(contours)):
-        area_ob.append(cv2.contourArea(contours[i]))     #area
         m=cv2.moments(contours[i])                       #moments
+        if(m['m00']==0):
+            cx.append(-1)                #centroid x
+            cy.append(-1)                #centroid y
+            area_ob.append(-1)           #area
+            bounding.append(-1)          #bounding box
+            index.append(i)
+            continue
         cx.append(int(m['m10']/m['m00']))                #centroid x
         cy.append(int(m['m01']/m['m00']))                #centroid y
+        area_ob.append(cv2.contourArea(contours[i]))     #area
         bounding.append(cv2.boundingRect(contours[i]))   #bounding box
 
     if len(contours)>1:
 
         for i in range (len(contours)):
-            # finding area of contour[i]
+        # finding area of contour[i]
+            if i in index:
+                continue
             area=cv2.contourArea(contours[i])
             temp_area_object.append([area,i])
 
@@ -107,7 +117,7 @@ def score(im):
 
         # print(temp_area_object)
 
-        ratio_objects=temp_area_object[1]/temp_area_object[0]
+        ratio_objects=temp_area_object[1][0]/temp_area_object[0][0]
 
         if ratio_objects<0.15:
             area_object.append(temp_area_object[0][0])
@@ -156,7 +166,7 @@ def score(im):
 
     if multi_ob==1:
         for i in range (len(contours)):
-            weight = area_object(i) * mean_salval[i]
+            weight = area_object[i] * mean_salval[i]
             x = x + weight * (centroid_object_x[i])
             y = y + weight * (centroid_object_y[i])
             weightSum = weightSum + weight
@@ -252,4 +262,4 @@ def score(im):
 
 
 # im=cv2.imread('newpic.png')
-# score(im)
+# print(score(im))
