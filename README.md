@@ -20,9 +20,26 @@ b) Find salient object information of an input image using opencv image saliency
 
 Total composition score is weighted sum of four composition guideline score (Rule of Third, Visual Balance, Diagonal Dominance, Object Size)
 
-2) getLine.m : Extract prominent line's end points from the image.
+2) getLine.py : Extract prominent line's end points from the image.
 
-3) getLineValue.m : Measure the composition score that is related to line information.
+3) getLineValue.py : Measure the composition score that is related to line information.
+
+4) app.py: Creating flask server to host the score calculator page 
+
+5) templates folder: Containing html pages index.html and score.html
+
+5) static folder: Containing style.css and Upload folder ...Images uploaded will be stored there
+
+
+
+How to run:
+Step 1) Download the zip folder and extract it and open it in your editor (Vs code, Spyder etc) (Vs Code Recommended)
+Step 2) Install all the dependicies written in dependicies.txt
+Step 3) In your terminal, type command "python app.py"
+Step 4) Server will start and host a webpage at port 8000.
+Step 5) Upload the image whose composition score you want to find and you will get the result
+
+
 
 
 
