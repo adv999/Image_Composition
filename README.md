@@ -36,13 +36,15 @@ How to run:
 
 Step 1) Download the zip folder and extract it and open it in your editor (Vs code, Spyder etc) (Vs Code Recommended)
 
-Step 2) Install all the dependicies written in dependicies.txt
+Step 2) Make a folder named Upload under static folder ( to store the images uploaded ).
 
-Step 3) In your terminal, type command "python app.py"
+Step 3) Install all the dependicies written in dependicies.txt
 
-Step 4) Server will start and host a webpage at port 8000.
+Step 4) In your terminal, type command "python app.py"
 
-Step 5) Upload the image whose composition score you want to find and you will get the result
+Step 5) Server will start and host a webpage at port 8000.
+
+Step 6) Upload the image whose composition score you want to find and you will get the result
 
 
 
