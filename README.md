@@ -33,6 +33,7 @@ Total composition score is weighted sum of four composition guideline score (Rul
 
 
 How to run:
+
 Step 1) Download the zip folder and extract it and open it in your editor (Vs code, Spyder etc) (Vs Code Recommended)
 
 Step 2) Install all the dependicies written in dependicies.txt
