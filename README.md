@@ -34,9 +34,13 @@ Total composition score is weighted sum of four composition guideline score (Rul
 
 How to run:
 Step 1) Download the zip folder and extract it and open it in your editor (Vs code, Spyder etc) (Vs Code Recommended)
+
 Step 2) Install all the dependicies written in dependicies.txt
+
 Step 3) In your terminal, type command "python app.py"
+
 Step 4) Server will start and host a webpage at port 8000.
+
 Step 5) Upload the image whose composition score you want to find and you will get the result
 
 
