@@ -1,4 +1,4 @@
-Composition Score Calculator
+Image Composition Score Calculator
 
 Introduction:
 
